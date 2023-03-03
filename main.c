@@ -7,8 +7,9 @@ int main() {
   
     char input[255];
 
+    printf("personel project \nSQLite3 lite clone\nV 0.0.2");
     while(true){
-        printf("\nSQLone>");
+        printf("\nSQLone > ");
         scanf("%s", input);
 
         if(strcmp(input, ".exit") == 0){
