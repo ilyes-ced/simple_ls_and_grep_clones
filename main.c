@@ -3,6 +3,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+
+
+int command(char[] statement){
+    switch (statement) {
+        case (".exit"):
+            printf("exiting now");
+            exit(EXIT_SUCCESS);
+            break;
+        case (".hello"):
+            printf("Unrecognized command '%s'\n", statement);
+            continue;
+    }
+    return 0;
+}
+
+
+
 int main() {
   
     char input[255];
@@ -17,13 +35,7 @@ int main() {
         input[strcspn(input, "\n")] = 0;
 
         if(strcmp(input[0], ".") == 0){
-            switch (do_meta_command(input)) {
-                case (META_COMMAND_SUCCESS):
-                    continue;
-                case (META_COMMAND_UNRECOGNIZED_COMMAND):
-                    printf("Unrecognized command '%s'\n", input_buffer->buffer);
-                    continue;
-            }
+            command(input);
         }else{
             printf("-> unrecognized command : '%s'", input);
         }
