@@ -1,31 +1,14 @@
 use std::io;
 use std::io::prelude::*;
+use std::collections::HashMap;
 
-fn main(){
-
-
-    //let stdin = io::stdin();
-//
-    //
-    //for line in stdin.lock().lines() {
-    //    println!("{}", line.unwrap());
-    //}
-    
-
-
+fn main() {
     let stdin = io::stdin();
-    let mut stdin = stdin.lock();
+    let mut lines = stdin.lock().lines();
+    let mut records = HashMap::new();
 
-    let buffer = stdin.fill_buf().unwrap();
-
-    // work with buffer
-    println!("{buffer:?}");
-    println!("{:?}", buffer.lines());
-
-    // ensure the bytes we worked with aren't returned again later
-    let length = buffer.len();
-    stdin.consume(length);
+    while let Some(label) = lines.next() {
+        let value = lines.next().expect("No value for label");
+        records.insert(label.unwrap(), value.unwrap());
+    }
 }
-
-
-
