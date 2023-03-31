@@ -2,12 +2,26 @@
 name = "cmd_tools"
 version = "0.1.0"
 edition = "2021"
-
+license = "MIT"
+description = "A tool to search files"
+readme = "README.md"
+homepage = "https://github.com"
+repository = "https://github.com"
+keywords = ["cli", "search", "demo"]
+categories = ["command-line-utilities"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [[bin]]
-name = "grep"
+name = "grep_clone"
 path = "src/grep.rs"
+
+[[bin]]
+name = "ls_clone"
+path = "src/ls.rs"
+
+[[bin]]
+name = "cat_clone"
+path = "src/cat.rs"
 
 #[[bin]]
 #name = "ls"

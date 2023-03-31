@@ -10,51 +10,38 @@ struct Cli {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::parse();
     println!("{:?}", args);
-    println!("{:?}", &args.path);
-
-
-
-    
 
     let result = std::fs::read_to_string(&args.path);
     
     let content = match result {
         Ok(content) => {
-            println!("File content: {:?}", content);
             content
         }
         Err(error) => {
-            println!("Oh noes: {:?}", error);
             return Err(error.into());
         }
     };
-    
+
     let mut line_co = 1;
     for line in content.lines() {
         if line.contains(&args.pattern) {
-            println!(">>>>>>>>in line {}", line_co);
-            print!("\x1b[32mError\x1b[40m");
-            print!("\x1b[32mError\x1b[42m");
-            print!("\x1b[32mError\x1b[0m");
-            print!("\x1b[32mError\x1b[0m");
-            print!("\x1b[32mError\x1b[0m");
-            print!("\x1b[32mError\x1b[46m");
-            print!("\x1b[32mError\x1b[0m");
-            print!("\x1b[32mError\x1b[0m");
-            print!("\x1b[31mError\x1b[45m");
-            print!("\x1b[31mError\x1b[45m");
-            print!("\x1b[31mError\x1b[45m");
-            print!("\x1b[31mError\x1b[45m");
-            print!("\x1b[31mError\x1b[45m");
-            print!("\x1b[31mError\x1b[45m");
-            print!("\x1b[32mError\x1b[0m");
-            print!("\x1b[32mError\x1b[0m");
-            print!("\x1b[32mError\x1b[0m");
-            print!("\x1b[32mError\x1b[0m");
-            println!("{}", line);
+
+            println!(">>>>>>>> in line {} <<<<<<<<", line_co);
+            let split: Vec<&str> = line.split(&args.pattern).peekable().collect();
+            println!("{:?}", split);
+
+            println!("{}", split.len());
+
+            for s in split {
+                print!("{}", s);
+                print!("\x1b[34m{}\x1b[0m", &args.pattern);
+            }
+            println!("");
         }
         line_co += 1;
     }
+
+
 
     Ok(())
 
