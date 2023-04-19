@@ -5,7 +5,13 @@ linux grep, ls, cat, echo simple clones in rust (learning project)
 - find prompt in all files in a dir
 
 ### ls:
-- get all files and types in current dir
+- get all files and types in current dir (ls)
+- show hidden files (-a)
+- get meta data [premessions, size, last modified] (-m)
+- show as list (-l)
+- seperate with commas (-c)
+- show all files and folder of all sub directories (-r)
+- show help (--help)
 
 ### cat:
 - print file

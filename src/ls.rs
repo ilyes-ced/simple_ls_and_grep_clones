@@ -1,7 +1,7 @@
 use std::{
     fs::{self, ReadDir, DirEntry},
     env,
-    os::{unix::prelude::{MetadataExt}}
+    os::{unix::prelude::{MetadataExt}}, time::SystemTime
 };
 use std::process::Command;
 
@@ -13,7 +13,6 @@ struct Arguments{
     recursive: bool,
     meta: bool,
     comma: bool,
-    time: bool,
     help: bool,
     list: bool,
 }
@@ -25,7 +24,6 @@ impl Default for Arguments {
             recursive: false,
             meta: false,
             comma: false,
-            time: false,
             help: false,
             list: false,
         }
@@ -65,7 +63,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         args.pop();
                         print_dirs(dir, flags(args));
                     },
-                    Err(err) => {
+                    Err(..) => {
                         return Err("dir not exist".into())
                     }
                 }
@@ -131,19 +129,20 @@ fn print_dirs(dir: ReadDir, args: Arguments) -> Vec<DirEntry> {
         let file_dir = path.path();
         let path = file_dir.file_name().unwrap().to_str().unwrap();
         if file_dir.is_dir() {
-            //print!("{:?}", file_dir);
-            //print!("{:?}", fs::metadata(file_dir.as_os_str()).unwrap().len());
-            //print!("{:?}", fs::metadata(file_dir.as_os_str()).unwrap().modified());
-            //print!("{:?}", fs::metadata(file_dir.as_os_str()).unwrap().uid());
-            //print!("{:?}", fs::metadata(file_dir.as_os_str()).unwrap().gid());
-            print!("{:?}", fs::metadata(file_dir.as_os_str()).unwrap().mode());
-            let meta = fs::metadata(file_dir.as_os_str()).unwrap().mode();
-            premessions(meta);
-
-
             if &path[..1] != "." || args.all  {
-                if args.list || args.meta || args.time {
-                    println!("\x1b[94m{}\x1b[0m", path);
+                if args.list || args.meta {
+                    if args.meta{
+                        let meta = fs::metadata(file_dir.as_os_str()).unwrap().mode();
+                        premessions(meta);
+                        print!("  ");
+                        let meta_data = fs::metadata(file_dir.as_os_str()).unwrap();
+                        print_meta(meta_data.len());
+                        print_dates(meta_data.modified().unwrap());
+                        println!("\x1b[94m{}\x1b[0m", path);
+                        
+                    }else{
+                        println!("\x1b[94m{}\x1b[0m", path);
+                    }
                 }else{
                     print!("\x1b[94m{}\x1b[0m", path);
                     if args.comma {
@@ -155,19 +154,21 @@ fn print_dirs(dir: ReadDir, args: Arguments) -> Vec<DirEntry> {
                 }
             }
         }else{
-            //print!("{:?}", file_dir);
-            //print!("{:?}", fs::metadata(file_dir.as_os_str()).unwrap().len());
-            //print!("{:?}", fs::metadata(file_dir.as_os_str()).unwrap().modified());
-            //print!("{:?}", fs::metadata(file_dir.as_os_str()).unwrap().uid());
-            //print!("{:?}", fs::metadata(file_dir.as_os_str()).unwrap().gid());
-            print!("{:?}", fs::metadata(file_dir.as_os_str()).unwrap().mode());
-            let meta = fs::metadata(file_dir.as_os_str()).unwrap().mode();
-            premessions(meta);
-
-
             if &path[..1] != "." || args.all {
-                if args.list || args.meta || args.time {
-                    println!("{}", path);
+                if args.list || args.meta {
+                    if args.meta{
+                        let meta = fs::metadata(file_dir.as_os_str()).unwrap().mode();
+                        premessions(meta);
+                        print!("  ");
+                        let meta_data = fs::metadata(file_dir.as_os_str()).unwrap();
+                        print_meta(meta_data.len());
+                        print_dates(meta_data.modified().unwrap());
+                        println!("{}", path);
+                        
+
+                    }else{
+                        println!("{}", path);
+                    }
                 }else{
                     print!("{}", path);
                     if args.comma {
@@ -218,7 +219,6 @@ fn flags(args: Vec<String>) -> Arguments{
         recursive: false,
         meta: false,
         comma: false,
-        time: false,
         help: false,
         list: false,
     };
@@ -241,9 +241,6 @@ fn flags(args: Vec<String>) -> Arguments{
                     },
                     "c" => {
                         arguments_provided.comma = true;
-                    },
-                    "t" => {
-                        arguments_provided.time = true;
                     },
                     "l" => {
                         arguments_provided.list = true;
@@ -274,6 +271,60 @@ fn premessions( mode: u32 ){
     print!("{}",if (mode & (0x1<<3)) >= 1 {"x"}else{"-"});
     print!("{}",if (mode & (0x1<<2)) >= 1 {"r"}else{"-"});
     print!("{}",if (mode & (0x1<<1)) >= 1 {"w"}else{"-"});
-    println!("{}",if (mode & 0x1) >= 1 {"x"}else{"-"});
+    print!("{}",if (mode & 0x1) >= 1 {"x"}else{"-"});
 
+}
+
+
+
+fn print_meta( size: u64 ){
+    
+    if size <= 1024 {
+
+        let len = size;
+        spaces(len);
+        print!("{:?}  B   ", size);
+
+    }else if size <= 1024*1024 {
+
+        let len = size/(1024);
+        spaces(len);
+        print!("{:?} KB   ", len);
+    
+    }else if size <= 1024*1024*1024 {
+
+        let len = size/(1024*1024);
+        spaces(len);
+        print!("{:?} MB   ", len);
+    
+    }else if size <= 1024*1024*1024*1024 {
+
+        let len = size/(1024*1024*1024);
+        spaces(len);
+        print!("{:?} GB   ", len);
+    
+    }else if size <= 1024*1024*1024*1024*1024 {
+
+        let len = size/(1024*1024*1024*1024);
+        spaces(len);
+        print!("{:?} TB   ", len);
+  
+    }
+
+}
+
+fn spaces(size: u64) {
+    if  size < 10{
+        print!("   ");
+    }else if size < 100{
+        print!("  ");
+    }else if size < 1000{
+        print!(" ");
+    }
+}
+
+
+
+fn print_dates(timestamp: SystemTime) {
+    print!("*************************** {:?} ", timestamp)
 }
