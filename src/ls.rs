@@ -1,10 +1,10 @@
-use std::{fs::{self, ReadDir, File}, path::PathBuf, env, io::{BufReader, BufRead}};
+use std::{fs::{self, ReadDir, DirEntry}, path::PathBuf, env};
 use std::process::Command;
 
 
 
-#[derive(Debug)]
-struct arguments{
+#[derive(Debug, Clone)]
+struct Arguments{
     all: bool,
     recursive: bool,
     meta: bool,
@@ -14,9 +14,9 @@ struct arguments{
 
 }
 
-impl Default for arguments {
+impl Default for Arguments {
     fn default() -> Self {
-        arguments{
+        Arguments{
             all: false,
             recursive: false,
             meta: false,
@@ -35,27 +35,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     args.remove(0);
 
 
-
-    let mut arguments_provided = arguments{
-        all: false,
-        recursive: false,
-        meta: false,
-        comma: false,
-        time: false,
-        help: false,
-    };
-
     // display help page and close programm
-    if args.last().unwrap() == "--help" {
+    match args.last(){
+        Some(help) => {
+            if help == "--help" {
 
-        Command::new("cat")
-            .args(["src/ls_help.txt"])
-            .spawn()
-            .expect("spawn failure");
+                Command::new("cat")
+                .args(["src/ls_help.txt"])
+                .spawn()
+                .expect("spawn failure");
+            
+               std::process::exit(0);
+            }
+        },
+        _ => {}
 
-        std::process::exit(0);
-
-    }
+    };
 
     match args.last(){
         Some(arg) => {
@@ -63,8 +58,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 match fs::read_dir(arg){
                     Ok(dir) => {
                         args.pop();
-                        println!("hello there here we have args where final is dir");
-                        start(dir, flags(args));
+                        print_dirs(dir, flags(args));
                     },
                     Err(err) => {
                         return Err("dir not exist".into())
@@ -72,54 +66,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }else{
                 let dir = fs::read_dir(".");
-                println!("hello hello there here we have args");
-                start(dir.unwrap(), flags(args));
+                print_dirs(dir.unwrap(), flags(args));
             }
         },
         None => {
             let dir = fs::read_dir(".");
-            println!("hello no args");
-            start(dir.unwrap(), arguments::default());
+            print_dirs(dir.unwrap(), Arguments::default());
         },
     }
 
-
-
-
-
-
-
-
     Ok(())
-}
 
-
-
-
-
-
-
-
-
-
-
-
-
-fn is_dir_or_file(file_dir: PathBuf) {
-    let is_dir = file_dir.is_dir();
-    let path = file_dir.file_name().unwrap().to_str().unwrap();
-
-    if is_dir {
-        if &path[..1] != "." {
-            print!("\x1b[34m{}\x1b[0m", path);
-            print!("    ");
-        }
-    }else{
-        if &path[..1] != "." {
-            print!("{}", path);
-            print!("    ");
-        }
-    }
 }
 
 
@@ -145,61 +102,53 @@ fn is_dir_or_file(file_dir: PathBuf) {
 
 
 
+//recursive 
+fn print_dirs(dir: ReadDir, args: Arguments) -> Vec<DirEntry> {
+    let paths: ReadDir = dir;
 
-
-
-fn start(path: ReadDir, args: arguments) {
-    println!("{:?}", args);
-
-    let paths = path;
-
-    let mut sorted_paths: Vec<_> = paths
+    let mut sorted_paths: Vec<DirEntry> = paths
         .map(|r| r.unwrap())
         .collect();
     
     sorted_paths.sort_by_key(|dir| dir.path());
 
 
-    for path in sorted_paths {
-        is_dir_or_file(path.path());
+    //first print all
+    println!("\x1b[34m>>{:?}:\x1b[0m", sorted_paths);
+
+    for path in &sorted_paths {
+
+        let file_dir = path.path();
+        let path = file_dir.file_name().unwrap().to_str().unwrap();
+        if file_dir.is_dir() {
+            if &path[..1] != "." || args.all  {
+                print!("\x1b[34m{}\x1b[0m", path);
+                print!("    ");
+            }
+        }else{
+            if &path[..1] != "." || args.all {
+                print!("{}", path);
+                print!("    ");
+            }
+        }
     };
-
-
     println!("");
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-fn print_all_sub_dirs(file_dir: PathBuf) {
-    let is_dir = file_dir.is_dir();
-    let path = file_dir.file_name().unwrap().to_str().unwrap();
-
-    if is_dir {
-        if &path[..1] != "." {
-            print!("\x1b[34m{}\x1b[0m", path);
-            print!("    ");
-        }
-    }else{
-        if &path[..1] != "." {
-            print!("{}", path);
-            print!("    ");
-        }
+    println!("");
+    //second print all inside of dirs in recursive whe the recursive flag is given
+    if args.recursive {
+        for path in &sorted_paths {
+            let dir = path.path();
+            if dir.is_dir() {
+                println!("\x1b[34m>>{}:\x1b[0m", dir.to_str().unwrap());
+                print_dirs(
+                    fs::read_dir(dir).unwrap(), args.clone()
+                );
+                println!("");
+            }
+        };
     }
+
+    sorted_paths
 }
 
 
@@ -210,14 +159,21 @@ fn print_all_sub_dirs(file_dir: PathBuf) {
 
 
 
+fn print_all(){
+
+}
 
 
 
 
 
-fn flags(args: Vec<String>) -> arguments{
+
+
+
+
+fn flags(args: Vec<String>) -> Arguments{
     
-    let mut arguments_provided = arguments{
+    let mut arguments_provided = Arguments{
         all: false,
         recursive: false,
         meta: false,
