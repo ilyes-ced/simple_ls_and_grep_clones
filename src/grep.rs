@@ -34,7 +34,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             for s in split {
                 print!("{}", s);
-                print!("\x1b[34m{}\x1b[0m", &args.pattern);
+                print!("\x1b[91m{}\x1b[0m", &args.pattern);
             }
             println!("");
         }
