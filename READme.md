@@ -1,8 +1,9 @@
-linux grep, ls, cat, echo simple clones in rust (learning project)
+linux grep, ls simple clones in rust (learning project)
 
-### grep:
-- find prompt in several files
-- find prompt in all files in a dir
+### grep: 
+- find prompt in several files 
+- find prompt in all files in a dir  (recursive)
+- displays findings of with each file and each line
 
 ### ls:
 - get all files and types in current dir (ls)
@@ -12,9 +13,3 @@ linux grep, ls, cat, echo simple clones in rust (learning project)
 - seperate with commas (-c)
 - show all files and folder of all sub directories (-r)
 - show help (--help)
-
-### cat:
-- print file
-
-### echo:
-

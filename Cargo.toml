@@ -19,21 +19,7 @@ path = "src/grep.rs"
 name = "ls_clone"
 path = "src/ls.rs"
 
-[[bin]]
-name = "cat_clone"
-path = "src/cat.rs"
 
-[[bin]]
-name = "echo_clone"
-path = "src/echo.rs"
-
-#[[bin]]
-#name = "ls"
-#path = "src/ls.rs"
-#
-#[[bin]]
-#name = "cat"
-#path = "src/cat.rs"
 
 [dependencies]
 clap = { version = "4.2.1", features = ["derive"]  }

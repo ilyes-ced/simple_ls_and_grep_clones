@@ -1,42 +1,20 @@
 use std::{
     process::Command,
     env,
-    fs::{self, DirEntry, ReadDir},
-
+    fs::{self, DirEntry, ReadDir}, fmt::format, path,
 };
-
-
-
-#[derive(Debug, Clone)]
-struct Arguments {
-    all: bool,
-    recursive: bool,
-    meta: bool,
-    comma: bool,
-    help: bool,
-    list: bool,
-}
-
-impl Default for Arguments {
-    fn default() -> Self {
-        Arguments {
-            all: false,
-            recursive: false,
-            meta: false,
-            comma: false,
-            help: false,
-            list: false,
-        }
-    }
-}
-
-
 
 
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
 
+    let mut errors: Vec<String> = vec![];
+
     let mut args: Vec<String> = env::args().collect();
+    args.remove(0);
+
+    let binding = args.clone();
+    let pattren = binding.get(0).unwrap();
     args.remove(0);
 
     match args.last() {
@@ -53,63 +31,148 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         _ => {}
     };
 
-
-
-
-
-
     match args.last() {
         Some(arg) => {
-            if &arg[..1] != "-" {
+            
+            for arg in &args{
+                
+
+
                 match fs::read_dir(arg) {
                     Ok(dir) => {
-                        args.pop();
+                        read_dir(dir, pattren);
+                    },
+                    Err(err) => {
+                        match fs::read_to_string(arg) {
+                            Ok(file) => {
+                                read_file(file, pattren, arg);
+                            }
+                            Err(err) => {
+                                errors.push(format!("'{}' {}", arg , err.to_string()));
+                            },
+                        }; 
                     }
-                    Err(..) => return Err("dir not exist".into()),
                 }
-            } else {
-                let dir = fs::read_dir(".");
-            }
-        }
+
+
+
+
+            };
+
+            
+        },
         None => {
-            let dir = fs::read_dir(".");
+            // raed in currrent dir
+            let file = fs::read_dir(".");
         }
     }
 
-
-
-    
-//    println!("{:?}", args);
-//
-//    let result = std::fs::read_to_string(&args.path);
-//
-//    let content = match result {
-//        Ok(content) => content,
-//        Err(error) => {
-//            return Err(error.into());
-//        }
-//    };
-//
-//    let mut line_co = 1;
-//    for line in content.lines() {
-//        if line.contains(&args.pattern) {
-//            println!(">>>>>>>> in line {} <<<<<<<<", line_co);
-//            let split: Vec<&str> = line.split(&args.pattern).peekable().collect();
-//            println!("{:?}", split);
-//
-//            println!("{}", split.len());
-//
-//            for s in split {
-//                print!("{}", s);
-//                print!("\x1b[91m{}\x1b[0m", &args.pattern);
-//            }
-//            println!("");
-//        }
-//        line_co += 1;
-//    }
-
+    for error in errors{
+        println!("\x1b[91m{}\x1b[0m", error);
+    }
     Ok(())
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+fn read_dir(dir : ReadDir, pattren: &String) {
+    let dirs: Vec<DirEntry> = dir.map(|r| r.unwrap()).collect();
+    for dir in dirs{
+        match fs::read_dir(dir.path()) {
+            Ok(dir) => {
+                read_dir(dir, pattren);
+            },
+            Err(err) => {
+                match fs::read_to_string(dir.path()) {
+                    Ok(file) => {
+                        read_file(file, pattren, dir.path().to_str().unwrap());
+                    }
+                    Err(err) => {
+                        //errors.push(format!("'{}' {}", dir.path().to_str().unwrap() , err.to_string()));
+                    },
+                }; 
+            }
+        }
+    }
+}
+
+
+
+
+
+
+fn read_file(file: String, pattren: &String, path: &str) {
+    //println!("is file: {:?} ", file);
+    let mut line_co = 1;
+    for line in file.lines() {
+        if line.contains(pattren) {
+            print!("\x1b[94m{} in line{}:\x1b[0m" ,path , line_co);
+            let mut split= line.split(pattren).peekable();
+            while let Some(s) = split.next()  {
+                if !split.peek().is_none() {
+                    print!("{}", s);
+                    print!("\x1b[91m{}\x1b[0m", pattren);
+                }else{
+                    print!("{}", s);
+                }
+            }
+            
+            //for s in split {
+            //    print!("{}", s);
+            //    print!("\x1b[91m{}\x1b[0m", pattren);
+            //}
+            println!("");
+        }
+        line_co += 1;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
 //////////////bg
