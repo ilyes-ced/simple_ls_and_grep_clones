@@ -37,3 +37,5 @@ path = "src/echo.rs"
 
 [dependencies]
 clap = { version = "4.2.1", features = ["derive"]  }
+chrono = "0.4.24"
+num-traits = '0.2.15'

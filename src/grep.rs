@@ -1,58 +1,118 @@
-use clap::Parser;
+use std::{
+    process::Command,
+    env,
+    fs::{self, DirEntry, ReadDir},
 
-#[derive(Parser, Debug)]
-struct Cli {
-    pattern: String,
-    path: std::path::PathBuf,
+};
+
+
+
+#[derive(Debug, Clone)]
+struct Arguments {
+    all: bool,
+    recursive: bool,
+    meta: bool,
+    comma: bool,
+    help: bool,
+    list: bool,
+}
+
+impl Default for Arguments {
+    fn default() -> Self {
+        Arguments {
+            all: false,
+            recursive: false,
+            meta: false,
+            comma: false,
+            help: false,
+            list: false,
+        }
+    }
 }
 
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args = Cli::parse();
-    println!("{:?}", args);
 
-    let result = std::fs::read_to_string(&args.path);
-    
-    let content = match result {
-        Ok(content) => {
-            content
+
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+    let mut args: Vec<String> = env::args().collect();
+    args.remove(0);
+
+    match args.last() {
+        Some(help) => {
+            if help == "--help" {
+                Command::new("cat")
+                    .args(["src/grep_help.txt"])
+                    .spawn()
+                    .expect("spawn failure");
+
+                std::process::exit(0);
+            }
         }
-        Err(error) => {
-            return Err(error.into());
-        }
+        _ => {}
     };
 
-    let mut line_co = 1;
-    for line in content.lines() {
-        if line.contains(&args.pattern) {
 
-            println!(">>>>>>>> in line {} <<<<<<<<", line_co);
-            let split: Vec<&str> = line.split(&args.pattern).peekable().collect();
-            println!("{:?}", split);
 
-            println!("{}", split.len());
 
-            for s in split {
-                print!("{}", s);
-                print!("\x1b[91m{}\x1b[0m", &args.pattern);
+
+
+    match args.last() {
+        Some(arg) => {
+            if &arg[..1] != "-" {
+                match fs::read_dir(arg) {
+                    Ok(dir) => {
+                        args.pop();
+                    }
+                    Err(..) => return Err("dir not exist".into()),
+                }
+            } else {
+                let dir = fs::read_dir(".");
             }
-            println!("");
         }
-        line_co += 1;
+        None => {
+            let dir = fs::read_dir(".");
+        }
     }
 
 
 
-    Ok(())
+    
+//    println!("{:?}", args);
+//
+//    let result = std::fs::read_to_string(&args.path);
+//
+//    let content = match result {
+//        Ok(content) => content,
+//        Err(error) => {
+//            return Err(error.into());
+//        }
+//    };
+//
+//    let mut line_co = 1;
+//    for line in content.lines() {
+//        if line.contains(&args.pattern) {
+//            println!(">>>>>>>> in line {} <<<<<<<<", line_co);
+//            let split: Vec<&str> = line.split(&args.pattern).peekable().collect();
+//            println!("{:?}", split);
+//
+//            println!("{}", split.len());
+//
+//            for s in split {
+//                print!("{}", s);
+//                print!("\x1b[91m{}\x1b[0m", &args.pattern);
+//            }
+//            println!("");
+//        }
+//        line_co += 1;
+//    }
 
+    Ok(())
 }
 
-
-
-
-
 /*
-//////////////bg 
+//////////////bg
 Red 31
 Green 32
 Yellow 33
@@ -69,7 +129,7 @@ BrightMagenta 95
 BrightCyan 96
 BrightWhite 97
 
-//////////////fg 
+//////////////fg
 
 Black 40
 Red 41

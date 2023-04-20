@@ -6,7 +6,6 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::parse();
     println!("{:?}", args);
@@ -23,11 +22,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     //    }
     //};
 
-
-
-
-
     Ok(())
-
 }
-
