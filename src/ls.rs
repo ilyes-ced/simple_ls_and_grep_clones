@@ -1,14 +1,13 @@
+use chrono::prelude::*;
+use num_traits::FromPrimitive;
 use std::{
-    process::Command,
     env,
     fs::{self, DirEntry, ReadDir},
     os::unix::prelude::MetadataExt,
     path::PathBuf,
+    process::Command,
     time::SystemTime,
 };
-use chrono::prelude::*;
-use num_traits::FromPrimitive;
-
 
 #[derive(Debug, Clone)]
 struct Arguments {
@@ -248,13 +247,11 @@ fn spaces(size: u64) {
 fn print_dates(timestamp: SystemTime) {
     let timestamp: DateTime<Utc> = timestamp.into();
 
-
-
-
-    print!(" {} {:?} {} {}:{} ",
+    print!(
+        " {} {:?} {} {}:{} ",
         timestamp.year(),
         Month::from_u32(timestamp.month()).unwrap(),
-        timestamp.day(), 
+        timestamp.day(),
         timestamp.hour(),
         timestamp.minute(),
     );
